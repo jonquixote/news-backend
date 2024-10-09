@@ -76,6 +76,11 @@ app.post('/api/upload-video', upload.single('video'), (req, res) => {
   }
 });
 
+// Add a GET route for testing purposes
+app.get('/api/upload-video', (req, res) => {
+  res.status(200).json({ message: 'Video upload endpoint is working' });
+});
+
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
