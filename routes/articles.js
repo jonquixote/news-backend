@@ -97,12 +97,16 @@ router.get('/main-featured', async (req, res) => {
       .sort({ date: -1 })
       .limit(1);
     
+    console.log('Main featured article:', mainFeaturedArticle); // Add this log
+
     if (!mainFeaturedArticle) {
+      console.log('No main featured article found'); // Add this log
       return res.status(404).json({ message: 'No main featured article found' });
     }
     
     res.json(mainFeaturedArticle);
   } catch (err) {
+    console.error('Error fetching main featured article:', err); // Add this log
     res.status(500).json({ message: err.message });
   }
 });
