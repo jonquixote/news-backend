@@ -61,6 +61,17 @@ mongoose.connection.on('error', err => {
   console.error('MongoDB connection error:', err);
 });
 
+// Add this before line 65
+app.post('/api/upload-video', upload.single('video'), (req, res) => {
+  if (req.file) {
+    console.log('File uploaded successfully:', req.file);
+    res.json({ videoUrl: req.file.location });
+  } else {
+    console.error('No file received');
+    res.status(400).json({ error: 'No file uploaded' });
+  }
+});
+
 // Routes
 const articlesRouter = require('./routes/articles');
 app.use('/api/articles', articlesRouter);
@@ -76,7 +87,7 @@ app.post('/api/upload-video', upload.single('video'), (req, res) => {
   }
 });
 
-// Add a GET route for testing purposes
+// Add this GET route for testing purposes
 app.get('/api/upload-video', (req, res) => {
   res.status(200).json({ message: 'Video upload endpoint is working' });
 });
@@ -89,4 +100,10 @@ app.listen(PORT, () => {
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).send('Something broke!');
+});
+
+// Add this near the top of your server.js file, after your imports
+app.use((req, res, next) => {
+  console.log(`Received ${req.method} request to ${req.url}`);
+  next();
 });
