@@ -114,3 +114,6 @@ app.use((req, res, next) => {
   console.log('Request headers:', req.headers);
   next();
 });
+
+const uploadVideoRouter = require('./api/uploadvideo');
+app.use('/api', uploadVideoRouter);
