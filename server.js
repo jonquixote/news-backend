@@ -27,11 +27,11 @@ AWS.config.update({
 
 const s3 = new AWS.S3();
 
-// Configure multer for S3 uploads
+// Configure multer for S3 upload
 const upload = multer({
   storage: multerS3({
     s3: s3,
-    bucket: process.env.AWS_S3_BUCKET_NAME,
+    bucket: process.env.S3_BUCKET_NAME,
     acl: 'public-read',
     key: function (req, file, cb) {
       cb(null, 'videos/' + Date.now().toString() + '-' + file.originalname);
@@ -62,7 +62,7 @@ mongoose.connection.on('error', err => {
 const articlesRouter = require('./routes/articles');
 app.use('/api/articles', articlesRouter);
 
-// Add a new route for video uploads
+// Add the route for video uploads
 app.post('/api/upload-video', upload.single('video'), (req, res) => {
   if (req.file) {
     res.json({ videoUrl: req.file.location });
