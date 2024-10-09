@@ -10,13 +10,16 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// CORS middleware (apply before other middlewares)
-app.use(cors({
-  origin: ['https://apmnews.vercel.app', 'http://localhost:3000'],
-  credentials: true,
+// CORS configuration
+const corsOptions = {
+  origin: ['http://localhost:3000', 'https://apmnews.vercel.app'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization'],
-}));
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
 
 // Configure AWS
 AWS.config.update({
