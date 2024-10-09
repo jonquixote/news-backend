@@ -2,6 +2,11 @@ const express = require('express');
 const router = express.Router();
 const Article = require('../models/Article');
 
+// Debugging route
+router.get('/test', (req, res) => {
+  res.json({ message: 'Articles router is working' });
+});
+
 // Get all articles
 router.get('/', async (req, res) => {
   try {
