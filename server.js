@@ -26,8 +26,15 @@ mongoose.connect(process.env.MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
-.then(() => console.log('MongoDB connected'))
-.catch(err => console.log(err));
+.then(() => console.log('Connected to MongoDB'))
+.catch(err => {
+  console.error('Failed to connect to MongoDB:', err);
+  process.exit(1);
+});
+
+mongoose.connection.on('error', err => {
+  console.error('MongoDB connection error:', err);
+});
 
 // Routes
 const articlesRouter = require('./routes/articles');
@@ -35,4 +42,10 @@ app.use('/api/articles', articlesRouter);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
+});
+
+// Add this after your routes
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send('Something broke!');
 });

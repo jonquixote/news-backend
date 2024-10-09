@@ -5,10 +5,16 @@ const Article = require('../models/Article');
 // Get all articles
 router.get('/', async (req, res) => {
   try {
-    const articles = await Article.find();
+    console.log('Fetching articles');
+    const limit = parseInt(req.query.limit) || 10;
+    const articles = await Article.find({ status: 'published' })
+      .sort({ date: -1 })
+      .limit(limit);
+    console.log(`Found ${articles.length} articles`);
     res.json(articles);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    console.error('Error fetching articles:', err);
+    res.status(500).json({ message: err.message, stack: err.stack });
   }
 });
 
@@ -93,21 +99,22 @@ async function getArticle(req, res, next) {
 // Get the most recent main featured article
 router.get('/main-featured', async (req, res) => {
   try {
+    console.log('Fetching main featured article');
     const mainFeaturedArticle = await Article.findOne({ isMainFeatured: true, status: 'published' })
       .sort({ date: -1 })
       .limit(1);
     
-    console.log('Main featured article:', mainFeaturedArticle); // Add this log
+    console.log('Main featured article query result:', mainFeaturedArticle);
 
     if (!mainFeaturedArticle) {
-      console.log('No main featured article found'); // Add this log
+      console.log('No main featured article found');
       return res.status(404).json({ message: 'No main featured article found' });
     }
     
     res.json(mainFeaturedArticle);
   } catch (err) {
-    console.error('Error fetching main featured article:', err); // Add this log
-    res.status(500).json({ message: err.message });
+    console.error('Error fetching main featured article:', err);
+    res.status(500).json({ message: err.message, stack: err.stack });
   }
 });
 
