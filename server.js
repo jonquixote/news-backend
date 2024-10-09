@@ -39,7 +39,8 @@ const upload = multer({
     key: function (req, file, cb) {
       cb(null, 'videos/' + Date.now().toString() + '-' + file.originalname);
     }
-  })
+  }),
+  limits: { fileSize: 100 * 1024 * 1024 } // 100MB limit
 });
 
 // Increase payload size limit
