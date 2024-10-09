@@ -18,6 +18,33 @@ router.get('/', async (req, res) => {
   }
 });
 
+// Get the most recent main featured article
+router.get('/main-featured', async (req, res) => {
+  try {
+    console.log('Fetching main featured article');
+    const mainFeaturedArticle = await Article.findOne({ isMainFeatured: true, status: 'published' })
+      .sort({ date: -1 })
+      .limit(1);
+    
+    console.log('Main featured article query result:', mainFeaturedArticle);
+
+    if (!mainFeaturedArticle) {
+      console.log('No main featured article found');
+      return res.status(404).json({ message: 'No main featured article found' });
+    }
+    
+    res.json(mainFeaturedArticle);
+  } catch (err) {
+    console.error('Error fetching main featured article:', err);
+    res.status(500).json({ message: err.message, stack: err.stack });
+  }
+});
+
+// Get a specific article
+router.get('/:id', getArticle, (req, res) => {
+  res.json(res.article);
+});
+
 // Create a new article
 router.post('/', async (req, res) => {
   console.log('Received article data:', JSON.stringify(req.body, null, 2));
@@ -30,11 +57,6 @@ router.post('/', async (req, res) => {
     console.error('Error saving article:', err);
     res.status(400).json({ message: err.message, details: err });
   }
-});
-
-// Get a specific article
-router.get('/:id', getArticle, (req, res) => {
-  res.json(res.article);
 });
 
 // Update an article
@@ -95,27 +117,5 @@ async function getArticle(req, res, next) {
   res.article = article;
   next();
 }
-
-// Get the most recent main featured article
-router.get('/main-featured', async (req, res) => {
-  try {
-    console.log('Fetching main featured article');
-    const mainFeaturedArticle = await Article.findOne({ isMainFeatured: true, status: 'published' })
-      .sort({ date: -1 })
-      .limit(1);
-    
-    console.log('Main featured article query result:', mainFeaturedArticle);
-
-    if (!mainFeaturedArticle) {
-      console.log('No main featured article found');
-      return res.status(404).json({ message: 'No main featured article found' });
-    }
-    
-    res.json(mainFeaturedArticle);
-  } catch (err) {
-    console.error('Error fetching main featured article:', err);
-    res.status(500).json({ message: err.message, stack: err.stack });
-  }
-});
 
 module.exports = router;
