@@ -54,6 +54,9 @@ router.patch('/:id', getArticle, async (req, res) => {
   if (req.body.status != null) {
     res.article.status = req.body.status;
   }
+  if (req.body.isMainFeatured != null) {
+    res.article.isMainFeatured = req.body.isMainFeatured;
+  }
   try {
     const updatedArticle = await res.article.save();
     res.json(updatedArticle);
@@ -86,5 +89,22 @@ async function getArticle(req, res, next) {
   res.article = article;
   next();
 }
+
+// Get the most recent main featured article
+router.get('/main-featured', async (req, res) => {
+  try {
+    const mainFeaturedArticle = await Article.findOne({ isMainFeatured: true, status: 'published' })
+      .sort({ date: -1 })
+      .limit(1);
+    
+    if (!mainFeaturedArticle) {
+      return res.status(404).json({ message: 'No main featured article found' });
+    }
+    
+    res.json(mainFeaturedArticle);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
 
 module.exports = router;

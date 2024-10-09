@@ -14,7 +14,8 @@ const ArticleSchema = new mongoose.Schema({
       title: { type: String }
     }
   ],
-  status: { type: String, enum: ['draft', 'published'], default: 'draft' }
+  status: { type: String, enum: ['draft', 'published'], default: 'draft' },
+  isMainFeatured: { type: Boolean, default: false }
 });
 
 module.exports = mongoose.model('Article', ArticleSchema);
