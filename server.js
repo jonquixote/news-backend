@@ -68,8 +68,10 @@ app.use('/api/articles', articlesRouter);
 // Add the route for video uploads
 app.post('/api/upload-video', upload.single('video'), (req, res) => {
   if (req.file) {
+    console.log('File uploaded successfully:', req.file);
     res.json({ videoUrl: req.file.location });
   } else {
+    console.error('No file received');
     res.status(400).json({ error: 'No file uploaded' });
   }
 });
