@@ -9,8 +9,8 @@ const PORT = process.env.PORT || 5000;
 
 // CORS configuration
 const corsOptions = {
-  origin: 'http://localhost:3000', // This should match your frontend URL
-  credentials: true, // This is important for requests with credentials
+  origin: ['http://localhost:3000', 'https://your-frontend-domain.vercel.app'],
+  credentials: true,
 };
 
 app.use(cors(corsOptions));
