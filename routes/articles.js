@@ -19,7 +19,7 @@ router.get('/', async (req, res) => {
 });
 
 // Get the most recent main featured article
-router.get('/main-featured', async (req, res) => {
+router.get('/featured/main', async (req, res) => {
   try {
     console.log('Fetching main featured article');
     const mainFeaturedArticle = await Article.findOne({ isMainFeatured: true, status: 'published' })
