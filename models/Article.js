@@ -15,7 +15,8 @@ const ArticleSchema = new mongoose.Schema({
     }
   ],
   status: { type: String, enum: ['draft', 'published'], default: 'draft' },
-  isMainFeatured: { type: Boolean, default: false }
+  isMainFeatured: { type: Boolean, default: false },
+  videoUrl: { type: String }
 });
 
 module.exports = mongoose.model('Article', ArticleSchema);
