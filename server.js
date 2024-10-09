@@ -1,7 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const uploadVideoRouter = require('./routes/uploadvideo');
 require('dotenv').config();
 
 const app = express();
@@ -42,7 +41,6 @@ app.use((req, res, next) => {
 // Routes
 const articlesRouter = require('./routes/articles');
 app.use('/api/articles', articlesRouter);
-app.use('/api', uploadVideoRouter);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
