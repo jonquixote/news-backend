@@ -29,7 +29,6 @@ mongoose.connect(process.env.MONGODB_URI, {
 .then(() => console.log('Connected to MongoDB'))
 .catch(err => {
   console.error('Failed to connect to MongoDB:', err);
-  process.exit(1);
 });
 
 // Logging middleware
@@ -40,18 +39,35 @@ app.use((req, res, next) => {
 
 // Routes
 const articlesRouter = require('./routes/articles');
-const uploadVideoRouter = require('./routes/uploadvideo'); // Import the upload video router
+const uploadVideoRouter = require('./routes/uploadvideo');
 
 app.use('/api/articles', articlesRouter);
-app.use('/api/uploadvideo', uploadVideoRouter); // Use the upload video router
+app.use('/api/uploadvideo', uploadVideoRouter);
+
+// Root route for testing
+app.get('/', (req, res) => {
+  res.json({ message: 'API is running' });
+});
+
+// Catch-all route for debugging
+app.use('*', (req, res) => {
+  console.log(`Received request for ${req.originalUrl}`);
+  res.status(404).json({ message: `Route ${req.originalUrl} not found` });
+});
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).send('Something broke!');
+  console.error('Error:', err);
+  res.status(500).json({ message: 'Internal Server Error', error: err.message });
 });
 
-// Startt the server
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+// For local development
+if (process.env.NODE_ENV !== 'production') {
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+  });
+}
+
+// For Vercel
+module.exports = app;
