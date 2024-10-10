@@ -1,6 +1,6 @@
 const express = require('express');
 const multer = require('multer');
-const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
+const { S3Client, PutObjectCommand, GetObjectCommand } = require('@aws-sdk/client-s3');
 const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 const router = express.Router();
 
@@ -39,17 +39,23 @@ router.post('/', upload.single('video'), async (req, res) => {
     Bucket: process.env.AWS_S3_BUCKET_NAME,
     Key: key,
     Body: file.buffer,
-    ContentType: file.mimetype,
-    ACL: 'public-read'
+    ContentType: file.mimetype
   };
 
   try {
+    console.log('Attempting to upload file to S3 with params:', { ...params, Body: '[File Buffer]' });
     const command = new PutObjectCommand(params);
     await s3Client.send(command);
 
-    // Generate a signed URL for the uploaded object
-    const url = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
+    // Generate a pre-signed URL for the uploaded object
+    const getObjectParams = {
+      Bucket: process.env.AWS_S3_BUCKET_NAME,
+      Key: key
+    };
+    const getCommand = new GetObjectCommand(getObjectParams);
+    const url = await getSignedUrl(s3Client, getCommand, { expiresIn: 3600 }); // URL expires in 1 hour
 
+    console.log('File uploaded successfully. Pre-signed URL:', url);
     return res.status(200).json({
       message: 'Video uploaded successfully',
       videoUrl: url
@@ -67,7 +73,7 @@ router.get('/', (req, res) => {
 
 // Error handling middleware
 router.use((err, req, res, next) => {
-  console.error(err);
+  console.error('Error in uploadvideo route:', err);
   if (err instanceof multer.MulterError) {
     return res.status(400).json({ message: err.message });
   } else if (err) {
