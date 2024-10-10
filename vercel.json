@@ -7,10 +7,6 @@
     }
   ],
   "routes": [
-    // {
-    //   "src": "/api/uploadvideo",
-    //   "dest": "/api/uploadvideo.js"
-    // },
     {
       "src": "/(.*)",
       "dest": "/server.js"
