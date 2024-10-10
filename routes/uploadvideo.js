@@ -1,31 +1,21 @@
 const express = require('express');
 const multer = require('multer');
-const multerS3 = require('multer-s3');
-const aws = require('aws-sdk');
+const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
+const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 const router = express.Router();
 
 // Configure AWS SDK
-aws.config.update({
-  accessKeyId: process.env.AWS_ACCESS_KEY_ID, // Ensure these are set in your .env
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  region: process.env.AWS_REGION
+const s3Client = new S3Client({
+  region: process.env.AWS_REGION,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  },
 });
 
-const s3 = new aws.S3();
-
-// Configure multer to use multer-s3 for direct uploads to S3
+// Configure multer for memory storage
 const upload = multer({
-  storage: multerS3({
-    s3: s3,
-    bucket: process.env.AWS_S3_BUCKET_NAME,
-    acl: 'public-read', // Adjust as needed
-    metadata: function (req, file, cb) {
-      cb(null, { fieldName: file.fieldname });
-    },
-    key: function (req, file, cb) {
-      cb(null, `${Date.now()}_${file.originalname}`);
-    }
-  }),
+  storage: multer.memoryStorage(),
   limits: { fileSize: 100 * 1024 * 1024 }, // 100 MB limit
   fileFilter: function (req, file, cb) {
     // Accept video files only
@@ -37,15 +27,37 @@ const upload = multer({
 });
 
 // POST /api/uploadvideo
-router.post('/', upload.single('video'), (req, res) => {
+router.post('/', upload.single('video'), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ message: 'No video file uploaded' });
   }
 
-  return res.status(200).json({
-    message: 'Video uploaded successfully',
-    videoUrl: req.file.location
-  });
+  const file = req.file;
+  const key = `${Date.now()}_${file.originalname}`;
+
+  const params = {
+    Bucket: process.env.AWS_S3_BUCKET_NAME,
+    Key: key,
+    Body: file.buffer,
+    ContentType: file.mimetype,
+    ACL: 'public-read'
+  };
+
+  try {
+    const command = new PutObjectCommand(params);
+    await s3Client.send(command);
+
+    // Generate a signed URL for the uploaded object
+    const url = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
+
+    return res.status(200).json({
+      message: 'Video uploaded successfully',
+      videoUrl: url
+    });
+  } catch (error) {
+    console.error('Error uploading to S3:', error);
+    return res.status(500).json({ message: 'Error uploading video', error: error.message });
+  }
 });
 
 // GET /api/uploadvideo
@@ -53,13 +65,12 @@ router.get('/', (req, res) => {
   res.status(200).json({ message: 'Video upload endpoint is accessible' });
 });
 
-// Error handling middleware for multer
+// Error handling middleware
 router.use((err, req, res, next) => {
+  console.error(err);
   if (err instanceof multer.MulterError) {
-    // A Multer error occurred when uploading
     return res.status(400).json({ message: err.message });
   } else if (err) {
-    // An unknown error occurred
     return res.status(500).json({ message: err.message });
   }
   next();
