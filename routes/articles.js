@@ -41,7 +41,7 @@ router.get('/featured/main', async (req, res) => {
     res.json(mainFeaturedArticle);
   } catch (err) {
     console.error('Error fetching main featured article:', err);
-    res.status(500).json({ message: err.message, stack: err.stack });
+    res.status(500).json({ message: err.message });
   }
 });
 
