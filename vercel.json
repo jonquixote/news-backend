@@ -1,25 +1,25 @@
 {
-    "version": 2,
-    "builds": [
-      {
-        "src": "server.js",
-        "use": "@vercel/node"
-      }
-    ],
-    "routes": [
-      {
-        "src": "/api/uploadvideo",
-        "dest": "/api/uploadvideo.js"
-      },
-      {
-        "src": "/(.*)",
-        "dest": "/server.js"
-      }
-    ],
-    "functions": {
-      "api/**/*.js": {
-        "memory": 1024,
-        "maxDuration": 60
-      }
+  "version": 2,
+  "builds": [
+    {
+      "src": "server.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    // {
+    //   "src": "/api/uploadvideo",
+    //   "dest": "/api/uploadvideo.js"
+    // },
+    {
+      "src": "/(.*)",
+      "dest": "/server.js"
+    }
+  ],
+  "functions": {
+    "api/**/*.js": {
+      "memory": 1024,
+      "maxDuration": 60
     }
   }
+}

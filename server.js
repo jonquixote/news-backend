@@ -40,7 +40,10 @@ app.use((req, res, next) => {
 
 // Routes
 const articlesRouter = require('./routes/articles');
+const uploadVideoRouter = require('./routes/uploadvideo'); // Import the upload video router
+
 app.use('/api/articles', articlesRouter);
+app.use('/api/uploadvideo', uploadVideoRouter); // Use the upload video router
 
 // Error handling middleware
 app.use((err, req, res, next) => {
