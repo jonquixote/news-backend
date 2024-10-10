@@ -144,7 +144,7 @@ router.delete('/:id', getArticle, async (req, res) => {
     }
 
     // Remove the article from MongoDB
-    await article.remove();
+    await Article.deleteOne({ _id: article._id });
     res.json({ message: 'Article deleted successfully' });
   } catch (err) {
     res.status(500).json({ message: err.message });
