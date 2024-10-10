@@ -88,9 +88,6 @@ router.patch('/:id', getArticle, async (req, res) => {
   if (req.body.author != null) {
     res.article.author = req.body.author;
   }
-  if (req.body.date != null) {
-    res.article.date = req.body.date;
-  }
   if (req.body.content != null) {
     res.article.content = req.body.content;
   }
@@ -100,6 +97,7 @@ router.patch('/:id', getArticle, async (req, res) => {
   if (req.body.isMainFeatured != null) {
     res.article.isMainFeatured = req.body.isMainFeatured;
   }
+
   try {
     const updatedArticle = await res.article.save();
     res.json(updatedArticle);
