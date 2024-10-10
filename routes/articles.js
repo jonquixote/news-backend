@@ -1,6 +1,16 @@
 const express = require('express');
 const router = express.Router();
 const Article = require('../models/Article');
+const { S3Client, DeleteObjectCommand } = require('@aws-sdk/client-s3');
+
+// Configure AWS S3 Client
+const s3Client = new S3Client({
+  region: process.env.AWS_REGION,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  },
+});
 
 // Debugging route
 router.get('/test', (req, res) => {
@@ -101,8 +111,41 @@ router.patch('/:id', getArticle, async (req, res) => {
 // Delete an article
 router.delete('/:id', getArticle, async (req, res) => {
   try {
-    await res.article.remove();
-    res.json({ message: 'Article deleted' });
+    const article = res.article;
+
+    // Find all video blocks in the article
+    const videoBlocks = article.content.filter(block => block.type === 'video');
+
+    // Delete each video from AWS S3
+    for (const block of videoBlocks) {
+      const videoUrl = block.content;
+
+      try {
+        // Extract the S3 object key from the video URL
+        const url = new URL(videoUrl);
+        const key = decodeURIComponent(url.pathname.substring(1)); // Remove leading '/'
+
+        if (!key) {
+          console.error('Invalid S3 key extracted from URL:', videoUrl);
+          continue;
+        }
+
+        const deleteParams = {
+          Bucket: process.env.AWS_S3_BUCKET_NAME,
+          Key: key,
+        };
+
+        const command = new DeleteObjectCommand(deleteParams);
+        await s3Client.send(command);
+        console.log(`Deleted video from S3: ${key}`);
+      } catch (error) {
+        console.error(`Error deleting video from S3 for URL ${videoUrl}:`, error);
+      }
+    }
+
+    // Remove the article from MongoDB
+    await article.remove();
+    res.json({ message: 'Article deleted successfully' });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
