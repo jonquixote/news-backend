@@ -9,7 +9,7 @@ const ArticleSchema = new mongoose.Schema({
   content: [
     {
       type: { type: String, required: true },
-      content: { type: String, required: true },
+      content: { type: String },
       caption: { type: String },
       title: { type: String },
       videoBucket: { type: String },
