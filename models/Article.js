@@ -11,12 +11,13 @@ const ArticleSchema = new mongoose.Schema({
       type: { type: String, required: true },
       content: { type: String, required: true },
       caption: { type: String },
-      title: { type: String }
+      title: { type: String },
+      videoBucket: { type: String },
+      videoKey: { type: String }
     }
   ],
   status: { type: String, enum: ['draft', 'published'], default: 'draft' },
-  isMainFeatured: { type: Boolean, default: false },
-  videoUrl: { type: String }
+  isMainFeatured: { type: Boolean, default: false }
 });
 
 module.exports = mongoose.model('Article', ArticleSchema);

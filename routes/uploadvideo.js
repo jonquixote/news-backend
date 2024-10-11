@@ -47,18 +47,11 @@ router.post('/', upload.single('video'), async (req, res) => {
     const command = new PutObjectCommand(params);
     await s3Client.send(command);
 
-    // Generate a pre-signed URL for the uploaded object
-    const getObjectParams = {
-      Bucket: process.env.AWS_S3_BUCKET_NAME,
-      Key: key
-    };
-    const getCommand = new GetObjectCommand(getObjectParams);
-    const url = await getSignedUrl(s3Client, getCommand, { expiresIn: 3600 }); // URL expires in 1 hour
-
-    console.log('File uploaded successfully. Pre-signed URL:', url);
+    console.log('File uploaded successfully. Bucket:', process.env.AWS_S3_BUCKET_NAME, 'Key:', key);
     return res.status(200).json({
       message: 'Video uploaded successfully',
-      videoUrl: url
+      bucket: process.env.AWS_S3_BUCKET_NAME,
+      key: key
     });
   } catch (error) {
     console.error('Error uploading to S3:', error);
