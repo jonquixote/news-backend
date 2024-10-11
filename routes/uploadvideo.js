@@ -64,6 +64,29 @@ router.get('/', (req, res) => {
   res.status(200).json({ message: 'Video upload endpoint is accessible' });
 });
 
+// POST /api/getVideoUrl
+router.post('/getVideoUrl', async (req, res) => {
+  const { bucket, key } = req.body;
+
+  if (!bucket || !key) {
+    return res.status(400).json({ message: 'Bucket and key are required' });
+  }
+
+  try {
+    const command = new GetObjectCommand({
+      Bucket: bucket,
+      Key: key,
+    });
+
+    const url = await getSignedUrl(s3Client, command, { expiresIn: 3600 }); // URL expires in 1 hour
+
+    res.json({ url });
+  } catch (error) {
+    console.error('Error generating pre-signed URL:', error);
+    res.status(500).json({ message: 'Error generating video URL', error: error.message });
+  }
+});
+
 // Error handling middleware
 router.use((err, req, res, next) => {
   console.error('Error in uploadvideo route:', err);
