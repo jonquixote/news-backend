@@ -43,6 +43,7 @@ const uploadVideoRouter = require('./routes/uploadvideo');
 
 app.use('/api', uploadVideoRouter);
 app.use('/api/articles', articlesRouter);
+app.use('/api/uploadvideo', uploadVideoRouter);
 
 // Root route for testing
 app.get('/', (req, res) => {
