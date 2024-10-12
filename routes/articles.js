@@ -138,7 +138,6 @@ router.patch('/:id', getArticle, async (req, res) => {
         };
       }
     }));
-    
     // Handle deletions
     for (let i = updatedContent.length; i < res.article.content.length; i++) {
       const deletedBlock = res.article.content[i];
@@ -222,23 +221,6 @@ async function getArticle(req, res, next) {
   }
   res.article = article;
   next();
-}
-
-// Helper function to delete a file from S3
-async function deleteFileFromS3(fileUrl) {
-  try {
-    const url = new URL(fileUrl);
-    const key = decodeURIComponent(url.pathname.substring(1));
-    const deleteParams = {
-      Bucket: process.env.AWS_S3_BUCKET_NAME,
-      Key: key,
-    };
-    const command = new DeleteObjectCommand(deleteParams);
-    await s3Client.send(command);
-    console.log(`Deleted file from S3: ${key}`);
-  } catch (error) {
-    console.error(`Error deleting file from S3 for URL ${fileUrl}:`, error);
-  }
 }
 
 module.exports = router;
