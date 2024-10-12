@@ -14,7 +14,7 @@ const ArticleSchema = new mongoose.Schema({
       title: { type: String },
       videoBucket: { type: String },
       videoKey: { type: String },
-      tweetId: { type: String } // Add this line
+      tweetId: { type: String } // Ensure this is included
     }
   ],
   status: { type: String, enum: ['draft', 'published'], default: 'draft' },

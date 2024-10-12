@@ -64,18 +64,22 @@ router.get('/:id', getArticle, (req, res) => {
 router.post('/', async (req, res) => {
   console.log('Received article data:', JSON.stringify(req.body, null, 2));
   
-  // Process the content array to handle tweet blocks
-  if (req.body.content) {
-    req.body.content = req.body.content.map(block => {
-      if (block.type === 'tweet') {
-        return {
-          ...block,
-          tweetId: block.content // Store the tweet ID in the tweetId field
-        };
-      }
-      return block;
-    });
+  // Ensure content is an array
+  if (!Array.isArray(req.body.content)) {
+    req.body.content = [];
   }
+
+  // Process the content array to handle tweet blocks
+  req.body.content = req.body.content.map(block => {
+    if (block.type === 'tweet') {
+      return {
+        type: 'tweet',
+        content: block.content,
+        tweetId: block.content // Ensure tweetId is set
+      };
+    }
+    return block;
+  });
 
   const article = new Article(req.body);
   try {
