@@ -102,22 +102,54 @@ router.patch('/:id', getArticle, async (req, res) => {
     res.article.tagline = req.body.tagline;
   }
   if (req.body.mainImage != null) {
+    // If mainImage is updated, delete the old one from S3 if it exists
+    if (res.article.mainImage && res.article.mainImage.startsWith('https://')) {
+      await deleteFileFromS3(res.article.mainImage);
+    }
     res.article.mainImage = req.body.mainImage;
   }
   if (req.body.author != null) {
     res.article.author = req.body.author;
   }
   if (req.body.content != null) {
-    // Process the content array to handle tweet blocks
-    res.article.content = req.body.content.map(block => {
-      if (block.type === 'tweet') {
+    // Process the content array to handle updates and deletions
+    const updatedContent = await Promise.all(req.body.content.map(async (newBlock, index) => {
+      const existingBlock = res.article.content[index];
+      
+      if (newBlock.type === 'video') {
+        if (existingBlock && existingBlock.type === 'video' && existingBlock.videoKey !== newBlock.videoKey) {
+          // Video has been updated, delete the old one
+          await deleteFileFromS3(`${process.env.AWS_S3_BUCKET_NAME}/${existingBlock.videoKey}`);
+        }
         return {
-          ...block,
-          tweetId: block.content // Store the tweet ID in the tweetId field
+          ...newBlock,
+          tweetId: newBlock.content // Store the tweet ID in the tweetId field for tweets
+        };
+      } else if (newBlock.type === 'image') {
+        if (existingBlock && existingBlock.type === 'image' && existingBlock.content !== newBlock.content) {
+          // Image has been updated, delete the old one
+          await deleteFileFromS3(existingBlock.content);
+        }
+        return newBlock;
+      } else {
+        return {
+          ...newBlock,
+          tweetId: newBlock.content // Store the tweet ID in the tweetId field for tweets
         };
       }
-      return block;
-    });
+    }));
+    
+    // Handle deletions
+    for (let i = updatedContent.length; i < res.article.content.length; i++) {
+      const deletedBlock = res.article.content[i];
+      if (deletedBlock.type === 'video') {
+        await deleteFileFromS3(`${process.env.AWS_S3_BUCKET_NAME}/${deletedBlock.videoKey}`);
+      } else if (deletedBlock.type === 'image') {
+        await deleteFileFromS3(deletedBlock.content);
+      }
+    }
+    
+    res.article.content = updatedContent;
   }
   if (req.body.status != null) {
     res.article.status = req.body.status;
@@ -190,6 +222,23 @@ async function getArticle(req, res, next) {
   }
   res.article = article;
   next();
+}
+
+// Helper function to delete a file from S3
+async function deleteFileFromS3(fileUrl) {
+  try {
+    const url = new URL(fileUrl);
+    const key = decodeURIComponent(url.pathname.substring(1));
+    const deleteParams = {
+      Bucket: process.env.AWS_S3_BUCKET_NAME,
+      Key: key,
+    };
+    const command = new DeleteObjectCommand(deleteParams);
+    await s3Client.send(command);
+    console.log(`Deleted file from S3: ${key}`);
+  } catch (error) {
+    console.error(`Error deleting file from S3 for URL ${fileUrl}:`, error);
+  }
 }
 
 module.exports = router;
