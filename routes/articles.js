@@ -121,23 +121,28 @@ router.patch('/:id', getArticle, async (req, res) => {
           // Video has been updated, delete the old one
           await deleteFileFromS3(`${process.env.AWS_S3_BUCKET_NAME}/${existingBlock.videoKey}`);
         }
-        return {
-          ...newBlock,
-          tweetId: newBlock.content // Store the tweet ID in the tweetId field for tweets
-        };
+        return newBlock;
       } else if (newBlock.type === 'image') {
         if (existingBlock && existingBlock.type === 'image' && existingBlock.content !== newBlock.content) {
           // Image has been updated, delete the old one
           await deleteFileFromS3(existingBlock.content);
         }
         return newBlock;
-      } else {
+      } else if (newBlock.type === 'text') {
+        // For text blocks, we just return the new block as is
+        return newBlock;
+      } else if (newBlock.type === 'tweet') {
+        // For tweet blocks, ensure the tweetId is stored correctly
         return {
           ...newBlock,
-          tweetId: newBlock.content // Store the tweet ID in the tweetId field for tweets
+          tweetId: newBlock.content // Store the tweet ID in the tweetId field
         };
+      } else {
+        // For any other block types, return as is
+        return newBlock;
       }
     }));
+
     // Handle deletions
     for (let i = updatedContent.length; i < res.article.content.length; i++) {
       const deletedBlock = res.article.content[i];
