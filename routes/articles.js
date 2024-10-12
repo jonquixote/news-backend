@@ -63,6 +63,20 @@ router.get('/:id', getArticle, (req, res) => {
 // Create a new article
 router.post('/', async (req, res) => {
   console.log('Received article data:', JSON.stringify(req.body, null, 2));
+  
+  // Process the content array to handle tweet blocks
+  if (req.body.content) {
+    req.body.content = req.body.content.map(block => {
+      if (block.type === 'tweet') {
+        return {
+          ...block,
+          tweetId: block.content // Store the tweet ID in the tweetId field
+        };
+      }
+      return block;
+    });
+  }
+
   const article = new Article(req.body);
   try {
     const newArticle = await article.save();
@@ -89,7 +103,16 @@ router.patch('/:id', getArticle, async (req, res) => {
     res.article.author = req.body.author;
   }
   if (req.body.content != null) {
-    res.article.content = req.body.content;
+    // Process the content array to handle tweet blocks
+    res.article.content = req.body.content.map(block => {
+      if (block.type === 'tweet') {
+        return {
+          ...block,
+          tweetId: block.content // Store the tweet ID in the tweetId field
+        };
+      }
+      return block;
+    });
   }
   if (req.body.status != null) {
     res.article.status = req.body.status;

@@ -13,7 +13,8 @@ const ArticleSchema = new mongoose.Schema({
       caption: { type: String },
       title: { type: String },
       videoBucket: { type: String },
-      videoKey: { type: String }
+      videoKey: { type: String },
+      tweetId: { type: String } // Add this line
     }
   ],
   status: { type: String, enum: ['draft', 'published'], default: 'draft' },
