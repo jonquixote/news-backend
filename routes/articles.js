@@ -83,6 +83,7 @@ router.post('/', async (req, res) => {
 
   const article = new Article(req.body);
   try {
+    console.log('Attempting to save article:', JSON.stringify(article, null, 2));
     const newArticle = await article.save();
     console.log('Article saved successfully:', JSON.stringify(newArticle, null, 2));
     res.status(201).json(newArticle);
