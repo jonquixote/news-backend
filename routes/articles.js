@@ -12,6 +12,20 @@ const s3Client = new S3Client({
   },
 });
 
+async function deleteFileFromS3(bucket, key) {
+  try {
+    const deleteParams = {
+      Bucket: bucket,
+      Key: key,
+    };
+    const command = new DeleteObjectCommand(deleteParams);
+    await s3Client.send(command);
+    console.log(`Deleted file from S3: ${key}`);
+  } catch (error) {
+    console.error(`Error deleting file from S3 for key ${key}:`, error);
+  }
+}
+
 // Debugging route
 router.get('/test', (req, res) => {
   res.json({ message: 'Articles router is working' });
@@ -102,10 +116,6 @@ router.patch('/:id', getArticle, async (req, res) => {
     res.article.tagline = req.body.tagline;
   }
   if (req.body.mainImage != null) {
-    // If mainImage is updated, delete the old one from S3 if it exists
-    if (res.article.mainImage && res.article.mainImage.startsWith('https://')) {
-      await deleteFileFromS3(res.article.mainImage);
-    }
     res.article.mainImage = req.body.mainImage;
   }
   if (req.body.author != null) {
@@ -119,7 +129,7 @@ router.patch('/:id', getArticle, async (req, res) => {
       if (newBlock.type === 'video') {
         if (existingBlock && existingBlock.type === 'video' && existingBlock.videoKey !== newBlock.videoKey) {
           // Video has been updated, delete the old one
-          await deleteFileFromS3(`${process.env.AWS_S3_BUCKET_NAME}/${existingBlock.videoKey}`);
+          await deleteFileFromS3(process.env.AWS_S3_BUCKET_NAME, existingBlock.videoKey);
         }
         return newBlock;
       } else if (newBlock.type === 'image') {
@@ -135,7 +145,6 @@ router.patch('/:id', getArticle, async (req, res) => {
           tweetId: newBlock.content // Store the tweet ID in the tweetId field
         };
       } else {
-        // For any other block types, return as is
         return newBlock;
       }
     }));
@@ -144,9 +153,7 @@ router.patch('/:id', getArticle, async (req, res) => {
     for (let i = updatedContent.length; i < res.article.content.length; i++) {
       const deletedBlock = res.article.content[i];
       if (deletedBlock.type === 'video') {
-        await deleteFileFromS3(`${process.env.AWS_S3_BUCKET_NAME}/${deletedBlock.videoKey}`);
-      } else if (deletedBlock.type === 'image') {
-        await deleteFileFromS3(deletedBlock.content);
+        await deleteFileFromS3(process.env.AWS_S3_BUCKET_NAME, deletedBlock.videoKey);
       }
     }
     
