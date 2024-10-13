@@ -123,10 +123,7 @@ router.patch('/:id', getArticle, async (req, res) => {
         }
         return newBlock;
       } else if (newBlock.type === 'image') {
-        if (existingBlock && existingBlock.type === 'image' && existingBlock.content !== newBlock.content) {
-          // Image has been updated, delete the old one
-          await deleteFileFromS3(existingBlock.content);
-        }
+        
         return newBlock;
       } else if (newBlock.type === 'text') {
         // For text blocks, we just return the new block as is
