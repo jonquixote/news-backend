@@ -40,10 +40,12 @@ app.use((req, res, next) => {
 // Routes
 const articlesRouter = require('./routes/articles');
 const uploadVideoRouter = require('./routes/uploadvideo');
+const homePageRoutes = require('./routes/homePageRoutes');
 
 app.use('/api', uploadVideoRouter);
 app.use('/api/articles', articlesRouter);
 app.use('/api/uploadvideo', uploadVideoRouter);
+app.use('/api/homepage', homePageRoutes);
 
 // Root route for testing
 app.get('/', (req, res) => {
