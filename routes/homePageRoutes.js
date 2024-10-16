@@ -63,6 +63,24 @@ router.post('/homepagevideo', upload.single('video'), async (req, res) => {
     }
   });
 
+// Get current homepage video info
+router.get('/homepagevideo', async (req, res) => {
+    try {
+        const bucket = process.env.AWS_S3_BUCKET_NAME;
+        const key = 'homePageVideo';
+
+        // Here we're just returning the bucket and key.
+        // The actual URL will be generated on the frontend using the /api/getVideoUrl endpoint.
+        res.json({
+            videoBucket: bucket,
+            videoKey: key
+        });
+    } catch (error) {
+        console.error('Error fetching homepage video info:', error);
+        res.status(500).json({ message: 'Error fetching homepage video info', error: error.message });
+    }
+});
+
 // Get all carousel images
 router.get('/carousel-images', async (req, res) => {
   try {
@@ -117,26 +135,6 @@ router.delete('/carousel-images', async (req, res) => {
     res.status(500).json({ message: 'Error deleting all carousel images', error: error.message });
   }
 });
-
-// Get video URL
-router.post('/getVideoUrl', async (req, res) => {
-    const bucket = process.env.AWS_S3_BUCKET_NAME;
-    const key = req.body.key || 'homePageVideo'; // Use provided key or default to 'homePageVideo'
-  
-    try {
-      const command = new GetObjectCommand({
-        Bucket: bucket,
-        Key: key,
-      });
-  
-      const url = await getSignedUrl(s3Client, command, { expiresIn: 3600 }); // URL expires in 1 hour
-  
-      res.json({ url });
-    } catch (error) {
-      console.error('Error generating pre-signed URL:', error);
-      res.status(500).json({ message: 'Error generating video URL', error: error.message });
-    }
-  });
 
 // Error handling middleware
 router.use((err, req, res, next) => {
