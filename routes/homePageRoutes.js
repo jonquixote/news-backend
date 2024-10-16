@@ -37,9 +37,7 @@ router.post('/homepagevideo', upload.single('video'), async (req, res) => {
   
     const file = req.file;
     const useTimestamp = req.body.useTimestamp === 'true'; // Check if we should use a timestamp
-    const key = useTimestamp 
-      ? `${Date.now()}_${file.originalname}`
-      : 'homePageVideo';
+    const key = 'homePageVideo';
   
     const params = {
       Bucket: process.env.AWS_S3_BUCKET_NAME,
@@ -121,7 +119,7 @@ router.delete('/carousel-images', async (req, res) => {
 });
 
 // Get video URL
-router.post('/homepagevideo', async (req, res) => {
+router.post('/getVideoUrl', async (req, res) => {
     const bucket = process.env.AWS_S3_BUCKET_NAME;
     const key = req.body.key || 'homePageVideo'; // Use provided key or default to 'homePageVideo'
   
